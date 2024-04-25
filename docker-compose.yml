@@ -1,0 +1,55 @@
+version: '3'
+
+services:
+  client_app:
+    build: 
+      context: ./client
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+      - "8080:80"
+    networks:
+      - nodejs-backend-network
+    depends_on:
+      - express_app
+    links:
+      - express_app
+
+  express_app:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8800:8800"
+    environment:
+      - PORT=8800
+      - MYSQL_HOST=mysqldb
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=adminadmin
+      - MYSQL_DATABASE=test
+    depends_on:
+      - mysqldb
+    networks:
+      - nodejs-backend-network
+
+  mysqldb:
+    image: mysql:latest
+    container_name: mysqldb
+    environment:
+      MYSQL_ROOT_PASSWORD: adminadmin
+      MYSQL_DATABASE: test
+      MYSQL_USER: user
+      MYSQL_PASSWORD: adminadmin
+    networks:
+      - nodejs-backend-network
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-test-vol:/var/lib/mysql
+    restart: always
+
+volumes:
+  mysql-test-vol:
+
+networks:
+  nodejs-backend-network:
